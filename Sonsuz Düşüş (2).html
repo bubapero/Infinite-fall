@@ -282,7 +282,7 @@ reset();fill();
 var DB=null,UID=null,NAME=LS('sd_user')||'',best=+LS('sd_best')||0;
 var ready=(async function(){try{if(!window.claude)return;var u=await claude.use('user'),d=await claude.use('db');if(u&&d){UID=await u.id();DB=d}}catch(e){}})();
 /* Ortaq skor tablosu: Firebase Realtime Database URL-ni bura yaz. Məs: 'https://layihe-default-rtdb.firebaseio.com' */
-var FB_URL='';
+var FB_URL='https://fall-33861-default-rtdb.firebaseio.com/';
 function fbBase(){return FB_URL.replace(/\/$/,'')}
 async function fbPush(sc,g){try{var u=fbBase()+'/scores/'+encodeURIComponent(NAME.toLowerCase())+'.json',o=null;try{o=await (await fetch(u)).json()}catch(e){}
   o=o||{};var mm=mIcons();if(o.name===NAME&&(o.best|0)>=sc&&(o.gold|0)>=g&&o.m===mm&&o.joined)return;
