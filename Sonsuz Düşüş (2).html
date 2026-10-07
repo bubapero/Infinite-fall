@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sonsuz Düşüş - voxel arkada oyunu</title>
+<meta name="description" content="Sonsuz Düşüş: voxel şaxtada dayanmadan aşağı düş, qızıl yığ, blokları qır. 50 hekayəli bölmə, kostyumlar və skor tablosu.">
+<meta property="og:title" content="Sonsuz Düşüş - voxel arkada oyunu">
+<meta property="og:description" content="Aşağı düş, qızıl yığ, blokları qır. 50 macəra bölməsi və sonsuz rejim.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0d0a14">
+
+<style>
+:root{--bg:#0d0a14;--fg:#fff4e0;--gold:#ffc83d;--hot:#ff5a36;--cy:#4de0ff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d0a14;--fg:#fff4e0}}
+:root[data-theme="dark"]{--bg:#0d0a14;--fg:#fff4e0}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif}
+canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
+#hud{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);padding:12px 16px;pointer-events:none;display:none;text-shadow:0 2px 0 #0008}
+#hud .r{display:flex;justify-content:space-between;font-weight:800;font-size:24px}
+#hud small{display:block;font-size:11px;font-weight:600;opacity:.75}
+#gd{color:var(--gold);text-align:right}
+.bar{height:8px;background:#fff2;margin-top:4px;border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--cy)}
+#sb i{background:#fff}
+#pw{margin-top:10px}#pw i{background:var(--gold)}
+#pw.full i{background:var(--hot);box-shadow:0 0 12px var(--hot)}
+#zt{position:fixed;top:120px;left:0;right:0;text-align:center;font-weight:800;font-size:22px;color:var(--gold);text-shadow:2px 2px 0 var(--hot);opacity:0;transition:opacity .4s;pointer-events:none}
+#ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#0d0a14c4;padding:20px;overflow:auto}
+#ov h1{font-size:44px;line-height:1;margin:0 0 14px;letter-spacing:-1px;color:var(--gold);text-shadow:4px 4px 0 var(--hot)}
+#ov h2{margin:0 0 12px;color:var(--gold)}
+#ov p{max-width:300px;margin:6px 0;opacity:.85;line-height:1.4}
+button{font:inherit;cursor:pointer}
+.b{display:block;min-width:210px;margin:7px 0;padding:13px 26px;font-size:19px;font-weight:800;border:0;background:#3a2f55;color:var(--fg);box-shadow:0 4px 0 #1d1630;border-radius:4px}
+.b.p{background:var(--gold);color:#2a1600;box-shadow:0 5px 0 #b57a00;font-size:22px}
+.b:active{transform:translateY(3px);box-shadow:0 1px 0 #0006}
+.row{display:flex;justify-content:space-between;align-items:center;gap:14px;min-width:250px;margin:6px 0;font-weight:700}
+.tg{width:58px;padding:7px 0;border:0;border-radius:4px;font-weight:800;background:#444;color:#ccc}
+.tg.on{background:var(--cy);color:#06303a}
+.sk{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:320px}
+.sk button{width:92px;padding:8px 4px;border:2px solid #3a2f55;background:#1b1430;color:var(--fg);border-radius:4px;font-size:12px;font-weight:700}
+.sk button.on{border-color:var(--gold)}
+.sk i{display:block;width:34px;height:34px;margin:0 auto 6px}
+input{font:inherit;padding:10px;width:170px;border:2px solid #3a2f55;background:#1b1430;color:var(--fg);border-radius:4px;user-select:text;-webkit-user-select:text}
+input[type=range]{width:110px;padding:0;touch-action:pan-x;accent-color:var(--cy)}
+.row b{width:36px;text-align:right}
+#ov.shop{justify-content:flex-end;background:linear-gradient(#0d0a1400 0%,#0d0a14f2 44%)}
+.sk button i{border-radius:3px}
+#lb{max-height:46vh;overflow:auto;min-width:260px;text-align:left;margin:10px 0}
+#lb div{display:flex;justify-content:space-between;padding:5px 8px;border-bottom:1px solid #fff2}
+#lb div:first-child{color:var(--gold)}
+.b{border:1px solid #ffffff2a;border-radius:24px;background:linear-gradient(180deg,#6a58a0 0%,#33285a 100%);box-shadow:inset 0 3px 4px #ffffff45,inset 0 -5px 9px #0007,0 7px 16px #0008;margin:6px 0;padding:12px 26px;text-shadow:0 1px 2px #0008}
+.b.p{background:linear-gradient(180deg,#ffe98a 0%,#ffb300 100%);color:#3a2100;border-color:#fff6;text-shadow:0 1px 0 #fff8;box-shadow:inset 0 3px 4px #fffa,inset 0 -6px 10px #c4780066,0 7px 18px #ffb30066}
+.b:active{transform:scale(.97);box-shadow:inset 0 5px 12px #000a,0 1px 3px #0006}
+.b:disabled{opacity:.4}
+.tg{border-radius:16px;box-shadow:inset 0 2px 3px #fff4,inset 0 -3px 6px #0006}
+.sk button{border-radius:18px;background:linear-gradient(180deg,#2a2146,#171028);box-shadow:inset 0 2px 3px #ffffff30,inset 0 -4px 8px #0008}
+.sk button.on{box-shadow:inset 0 2px 3px #ffffff30,inset 0 -4px 8px #0008,0 0 12px #ffc83d88}
+.sk button small{font-weight:400;opacity:.8;font-size:10px}
+input{border-radius:16px;box-shadow:inset 0 3px 8px #000a}
+#ov.shop .sk{max-height:34vh;overflow:auto}
+#fl{position:fixed;inset:0;opacity:0;pointer-events:none;transition:opacity .3s;background:#fff}
+#fl{position:fixed;inset:0;opacity:0;pointer-events:none;transition:opacity .5s;background:#fff}
+#g{display:inline-block}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.6)}100%{transform:scale(1)}}.pop{animation:pop .3s}
+.card{background:linear-gradient(180deg,#2a2146,#171028);border:1px solid #fff2;border-radius:20px;padding:14px;min-width:290px;max-width:330px;box-shadow:inset 0 2px 3px #ffffff25,0 6px 16px #0008}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.grid div{background:#0004;border-radius:12px;padding:8px 2px;font-size:11px;opacity:.95}
+.grid b{display:block;font-size:16px;color:var(--gold)}
+#ov:not(.shop){justify-content:flex-start}
+#ov:not(.shop)>:first-child{margin-top:auto}
+#ov:not(.shop)>:last-child{margin-bottom:auto}
+</style>
+</head>
+<body>
+<div id="hud"><div class="r"><div style="flex:1;margin-right:30px"><small id="sl">XAL</small><span id="sc">0</span><div class="bar" id="sb"><i></i></div></div><div id="gd"><small>QIZIL</small><span id="g">0</span></div></div><div class="bar" id="pw"><i></i></div></div>
+<div id="zt"></div><div id="fl"></div><div id="fl"></div>
+<div id="ov"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var LS=function(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
+
+/* ---------- AUDIO ---------- */
+var vm=1,opt={sfx:.8,mm:.6,gm:.6};try{Object.assign(opt,JSON.parse(LS('sd_opt')||'{}'))}catch(e){}
+var AC=null;
+var bus=null;
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();bus=AC.createGain();bus.connect(AC.destination);var dl=AC.createDelay(),fb=AC.createGain(),wt=AC.createGain();dl.delayTime.value=.27;fb.gain.value=.32;wt.gain.value=.28;bus.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wt);wt.connect(AC.destination)}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC}
+function tone(f,d,ty,v,w){var a=ac();if(!a)return;var vv=(v||.07)*vm;if(vv<.002)return;var o=a.createOscillator(),g=a.createGain(),t=a.currentTime+(w||0);o.type=ty||'square';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vv,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(bus||a.destination);o.start(t);o.stop(t+d)}
+function noise(d,v){var a=ac();if(!a)return;v=v*vm;if(v<.002)return;var n=a.sampleRate*d,b=a.createBuffer(1,n,a.sampleRate),x=b.getChannelData(0);for(var i=0;i<n;i++)x[i]=(Math.random()*2-1)*(1-i/n);var s=a.createBufferSource(),g=a.createGain();g.gain.value=v;s.buffer=b;s.connect(g);g.connect(bus||a.destination);s.start()}
+function sfx(n){vm=opt.sfx;if(vm<.01)return;
+  if(n==='coin'){tone(880,.1,'square',.05);tone(1320,.14,'square',.05,.07)}
+  else if(n==='crate')noise(.22,.25);
+  else if(n==='power'){[523,659,784,1046].forEach(function(f,i){tone(f,.15,'triangle',.08,i*.06)})}
+  else if(n==='smash'){noise(.4,.5);tone(110,.3,'sawtooth',.1)}
+  else if(n==='die'){[400,300,200,120].forEach(function(f,i){tone(f,.2,'sawtooth',.07,i*.1)})}
+  else if(n==='start'){[392,523,659,784].forEach(function(f,i){tone(f,.18,'square',.06,i*.09)})}
+  else if(n==='zone'){tone(660,.15,'triangle',.08);tone(990,.25,'triangle',.08,.12)}
+  else if(n==='ui')tone(600,.05,'square',.04)}
+var mus=null,mi=0,mkind='';
+var SEQ={m:[261,329,392,329,293,349,440,349],g:[220,262,330,262,196,247,294,247]};
+var PG=[[[57,60,64],[53,57,60],[55,59,62],[52,55,59]],[[62,65,69],[58,62,65],[60,64,67],[57,60,64]],[[60,63,67],[56,60,63],[58,62,65],[55,58,62]],[[64,67,71],[60,64,67],[62,66,69],[59,62,66]],[[55,58,62],[51,55,58],[53,57,60],[50,53,57]]],CHM=[[57,60,64],[53,57,60],[48,52,55],[55,59,62]],stp=0,mzone=0,MEL=[0,2,1,2,0,1,2,1,0,2,2,1];
+function mf(n){return 440*Math.pow(2,(n-69)/12)}
+function music(k,z){var old=mkind;if(z!==undefined)mzone=z%5;if(mus&&k&&k===old)return;
+  if(mus){clearInterval(mus);mus=null}mkind=k;if(!k)return;
+  var key=k==='m'?'mm':'gm';if(!AC)return;stp=0;
+  mus=setInterval(function(){vm=opt[key];var q=stp++,bar=(q>>4)&3,t=q&15,sec=(q>>6)&1,ch=(k==='m'?CHM:PG[mzone])[bar];
+    if(k==='m'){
+      if(t===0){ch.forEach(function(n){tone(mf(n),2.8,'triangle',.045)});tone(mf(ch[0]-12),1.7,'sine',.09)}
+      if(t%2===0)tone(mf(ch[(t>>1)%3]+12),.55,'sine',.045);
+      if(t%4===0&&Math.random()<.65)tone(mf(ch[MEL[(q>>2)%12]]+24),.9,'triangle',.04);
+      if(t===8&&Math.random()<.5)tone(mf(ch[2]+31),1.1,'sine',.025)}
+    else{
+      if(t%4===0)tone(58,.16,'sine',.22);
+      if(t%8===4){noise(.09,.1);tone(190,.07,'triangle',.05)}
+      if(t%2===1)noise(.025,.035);
+      tone(mf(ch[0]-12+(t%4===2?12:0)),.15,'sawtooth',.045);
+      tone(mf(ch[[0,1,2,1][t%4]]+12+(sec?12:0)),.1,'square',.02);
+      if([0,3,6,10,12,14].indexOf(t)>=0)tone(mf(ch[MEL[(q>>1)%12]]+(sec?24:19)),.26,'triangle',.045);
+      if(t===0&&bar===0&&sec)tone(mf(ch[0]+24),1.2,'sawtooth',.02)}
+  },k==='m'?178:107)}
+function saveOpt(){LS('sd_opt',JSON.stringify(opt))}
+
+/* ---------- THREE ---------- */
+var scene=new THREE.Scene();
+var cam=new THREE.PerspectiveCamera(65,1,.1,100);
+var ren=new THREE.WebGLRenderer({antialias:true});
+ren.setPixelRatio(Math.min(devicePixelRatio||1,2));
+document.body.insertBefore(ren.domElement,document.body.firstChild);
+function rs(){ren.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.fov=cam.aspect<1?75:60;cam.updateProjectionMatrix()}
+addEventListener('resize',rs);rs();
+scene.add(new THREE.AmbientLight(0x9a8ac0,.95));
+var sun=new THREE.DirectionalLight(0xffe0b0,.6);sun.position.set(3,10,8);scene.add(sun);
+var torch=new THREE.PointLight(0xffb060,1.6,22);scene.add(torch);
+
+var BOX=new THREE.BoxGeometry(1,1,1),W=7,GAP=5,ZL=12;
+var ZN=[{n:'Bənövşəyi şaxta',f:0x120b1f,h:.72,b:0xb0b6d4,c:0xe0883a},{n:'Buzlu mağara',f:0x0a1a26,h:.55,b:0xa8d4e4,c:0xd8782a},{n:'Lava dərinliyi',f:0x240c0a,h:.02,b:0xd4b0a8,c:0xe8a050},{n:'Zümrüd şaxta',f:0x0a2012,h:.35,b:0xa8d4b4,c:0xc88040},{n:'Qızıl mədən',f:0x221b08,h:.12,b:0xd4cca0,c:0xd89040}];
+function cv16(fn){var c=document.createElement('canvas');c.width=c.height=16;fn(c.getContext('2d'));return c}
+function shd(c,k){return 'rgb('+(Math.min(255,((c>>16)&255)*k)|0)+','+(Math.min(255,((c>>8)&255)*k)|0)+','+(Math.min(255,(c&255)*k)|0)+')'}
+function P(g,x,y,col){g.fillStyle=col;g.fillRect(x,y,1,1)}
+function nz(g,b,v){for(var y=0;y<16;y++)for(var x=0;x<16;x++)P(g,x,y,shd(b,1-v+Math.random()*2*v))}
+function tx(c){var t=new THREE.CanvasTexture(c);t.magFilter=t.minFilter=THREE.NearestFilter;return t}
+function bev(g,lo,hi){for(var i=0;i<16;i++){P(g,i,0,hi);P(g,0,i,hi);P(g,i,15,lo);P(g,15,i,lo)}}
+function slab(b,v,lo,hi,fl,n,grid){var f=cv16(function(g){nz(g,b,v);if(grid)for(var i=0;i<16;i++){P(g,i,5,grid);P(g,i,10,grid);P(g,5,i,grid);P(g,10,i,grid)}bev(g,lo,hi);for(var k=0;k<n;k++)P(g,2+Math.random()*12|0,2+Math.random()*12|0,fl)});return {s:f,t:f,b:f}}
+var BK={
+ grass:function(){var t=cv16(function(g){nz(g,0x5aa83a,.16)}),b=cv16(function(g){nz(g,0x8a5a36,.18)}),s=cv16(function(g){nz(g,0x8a5a36,.18);for(var x=0;x<16;x++){var h=3+(Math.random()<.5?1:0)+(Math.random()<.25?1:0);for(var y=0;y<h;y++)P(g,x,y,shd(0x5aa83a,.85+Math.random()*.3))}});return {s:s,t:t,b:b}},
+ lapis:function(){var f=cv16(function(g){nz(g,0x1f45a8,.16);for(var i=0;i<16;i++){var x=Math.random()*14|0,y=Math.random()*14|0;P(g,x,y,'#5a8cf5');P(g,x+1,y,'#4d7cf0');P(g,x,y+1,'#3a64d0')}for(i=0;i<14;i++)P(g,Math.random()*16|0,Math.random()*16|0,'#10286e')});return {s:f,t:f,b:f}},
+ gold:function(){return slab(0xf6c82c,.07,'#c58f0e','#fff3a6','#ffe36a',10)},
+ diamond:function(){return slab(0x3ee0cc,.08,'#1b9d90','#c8fff8','#e8fffd',10)},
+ diamond2:function(){return slab(0x38aef0,.08,'#1c70b0','#c0eaff','#e4f6ff',10)},
+ nether:function(){return slab(0x35395a,.1,'#1a1c2e','#5a6090','#6a78c8',8,'#23263e')}};
+function blockFaces(k,sp){var f=sp?genFaces(sp):BK[k](),em=sp&&sp.e?sp.e:0x222222,m=function(c){return new THREE.MeshLambertMaterial({map:tx(c),emissive:em})},a=m(f.s),t=m(f.t),b=m(f.b);return {mats:[a,a,t,b,a,a],icon:f.s.toDataURL()}}
+var texSteel=tx(cv16(function(g){nz(g,0xdcdcdc,.06);bev(g,'#9a9a9a','#f6f6f6');[[2,2],[12,2],[2,12],[12,12]].forEach(function(r){P(g,r[0],r[1],'#6a6a6a');P(g,r[0]+1,r[1],'#8a8a8a');P(g,r[0],r[1]+1,'#8a8a8a')});for(var i=3;i<13;i++)P(g,i,8,'#b4b4b4')}));
+var texCrate=tx(cv16(function(g){nz(g,0xe8e8e8,.07);for(var i=0;i<16;i++){P(g,i,5,'#a0a0a0');P(g,i,10,'#a0a0a0');P(g,i,0,'#b4b4b4');P(g,i,15,'#b4b4b4');P(g,0,i,'#b4b4b4');P(g,15,i,'#b4b4b4');P(g,i,i,'#aaaaaa');P(g,15-i,i,'#c4c4c4')}[[1,1],[14,1],[1,14],[14,14]].forEach(function(r){P(g,r[0],r[1],'#555')})}));
+var spBase=new THREE.MeshLambertMaterial({color:0x7a3a46,emissive:0x2a0a10,map:texSteel}),spCone=new THREE.MeshLambertMaterial({color:0xff5a4a,emissive:0x701010}),coneG=new THREE.ConeGeometry(.17,.44,4);
+var texLava=tx(cv16(function(g){nz(g,0xff7a1a,.25);for(var i=0;i<22;i++)P(g,Math.random()*16|0,Math.random()*16|0,'#ffe066');for(i=0;i<10;i++)P(g,Math.random()*16|0,Math.random()*16|0,'#b83a00')}));
+var texTnt=tx(cv16(function(g){nz(g,0xd22a22,.08);for(var y=5;y<11;y++)for(var x=0;x<16;x++)P(g,x,y,'#eeeeee');var L=[[2,6],[3,6],[4,6],[3,7],[3,8],[3,9],[3,10],[6,6],[6,7],[6,8],[6,9],[6,10],[8,6],[8,7],[8,8],[8,9],[8,10],[7,7],[7,8],[10,6],[11,6],[12,6],[11,7],[11,8],[11,9],[11,10]];L.forEach(function(q){P(g,q[0],q[1],'#222')})}));
+var mLava=new THREE.MeshLambertMaterial({color:0xffffff,map:texLava,emissive:0xff5a00,emissiveIntensity:.8}),mTnt=new THREE.MeshLambertMaterial({map:texTnt,emissive:0x331111}),mHeartM=new THREE.MeshLambertMaterial({color:0xff4a7a,emissive:0x802040}),mDia=new THREE.MeshLambertMaterial({color:0x3deddb,emissive:0x1a8a80});
+var spCone2=new THREE.MeshLambertMaterial({color:0xb04aff,emissive:0x401070}),spBase2=new THREE.MeshLambertMaterial({color:0x4a3a7a,emissive:0x1a1030,map:texSteel});
+var octGeo=new THREE.OctahedronGeometry(.6),coneT=new THREE.ConeGeometry(.5,1,5);
+var starGeo=(function(){var sh=new THREE.Shape();for(var i=0;i<10;i++){var r=i%2?.25:.55,a=Math.PI/2+i*Math.PI/5;i?sh.lineTo(Math.cos(a)*r,Math.sin(a)*r):sh.moveTo(Math.cos(a)*r,Math.sin(a)*r)}var g=new THREE.ExtrudeGeometry(sh,{depth:.2,bevelEnabled:false});g.translate(0,0,-.1);return g})();
+function put(g,m,x,y,sc){var o=new THREE.Mesh(g,m);o.scale.setScalar(sc);o.position.set(x,y,0);scene.add(o);return o}
+var cvC=document.createElement('canvas');cvC.width=18;cvC.height=6;var gC=cvC.getContext('2d');for(var yy=0;yy<6;yy++)for(var xx=0;xx<18;xx++){gC.fillStyle=(xx+yy)%2?'#111':'#fff';gC.fillRect(xx,yy,1,1)}
+var mCheck=new THREE.MeshLambertMaterial({map:tx(cvC),emissive:0x555555});
+function genFaces(sp){var b=sp.b,t=sp.t,f;
+  if(t==='wool')f=cv16(function(g){nz(g,b,.07);for(var y=0;y<16;y+=2)for(var x=(y>>1)%2;x<16;x+=2)P(g,x,y,shd(b,1.14))});
+  else if(t==='noise')f=cv16(function(g){nz(g,b,.14)});
+  else if(t==='ore')f=cv16(function(g){nz(g,b,.12);for(var k=0;k<7;k++){var x=1+Math.random()*12|0,y=1+Math.random()*12|0;P(g,x,y,shd(sp.a,1));P(g,x+1,y,shd(sp.a,.9));P(g,x,y+1,shd(sp.a,1.1));P(g,x+1,y+1,shd(sp.a,.85))}});
+  else if(t==='slab')return slab(b,.07,shd(b,.7),shd(b,1.3),shd(b,1.45),8);
+  else if(t==='plank')f=cv16(function(g){nz(g,b,.08);for(var i=0;i<16;i++){P(g,i,3,shd(b,.7));P(g,i,7,shd(b,.7));P(g,i,11,shd(b,.7));P(g,i,15,shd(b,.7))}for(var j=0;j<4;j++)P(g,(j*5+3)%16,j*4+1,shd(b,.7))});
+  else if(t==='brick')f=cv16(function(g){nz(g,0xbdbdb0,.05);for(var r=0;r<4;r++)for(var y=r*4;y<r*4+3;y++)for(var x=0;x<16;x++){if((x+(r%2)*4)%8<7)P(g,x,y,shd(b,.85+Math.random()*.3))}});
+  else if(t==='pump')f=cv16(function(g){nz(g,b,.08);for(var x=2;x<16;x+=4)for(var y=0;y<16;y++)P(g,x,y,shd(b,.75))});
+  else if(t==='melon')f=cv16(function(g){nz(g,b,.08);for(var x=0;x<16;x+=4)for(var y=0;y<16;y++)P(g,x+1,y,shd(b,.65))});
+  else f=cv16(function(g){nz(g,b,.1);for(var y=2;y<16;y+=5)for(var x=2;x<16;x+=5){P(g,x,y,'#fff5c0');P(g,x+1,y,'#fff5c0')}});
+  return {s:f,t:f,b:f}}
+var BOXG=new THREE.BoxGeometry(1,1,1);
+function mkSpike(x,y,mv){var g=new THREE.Group(),b=new THREE.Mesh(BOXG,mv?spBase2:spBase);b.scale.set(.96,.9,.96);g.add(b);
+  [-.28,0,.28].forEach(function(cx){[-.2,.2].forEach(function(cy){var c=new THREE.Mesh(coneG,mv?spCone2:spCone);c.rotation.x=Math.PI/2;c.position.set(cx,cy,.6);g.add(c)});[-.2,.2].forEach(function(cz){var c=new THREE.Mesh(coneG,mv?spCone2:spCone);c.position.set(cx,.62,cz);g.add(c)})});
+  g.position.set(x,y,0);scene.add(g);return g}
+function mkFinish(goal){var g=new THREE.Group();function bx(sx,sy,sz,x,y){var m=new THREE.Mesh(BOXG,mCheck);m.scale.set(sx,sy,sz);m.position.set(x,y,0);g.add(m)}bx(9,.6,3,0,-goal-.7);scene.add(g);return g}
+var AZ=[{n:'Qarlıq',f:0x15283d,h:.58,b:0xc4d8ee,c:0xe0883a},{n:'Soyuq mağara',f:0x0c1c2e,h:.5,b:0xa8d4e4,c:0xd8782a},{n:'İstilik',f:0x2a0d08,h:.02,b:0xd4b0a8,c:0xe8a050},{n:'Çöl',f:0x2e2410,h:.12,b:0xd4cca0,c:0xc88040},{n:'Qaranlıq',f:0x07060c,h:.75,b:0xb0b6d4,c:0xe0883a},{n:'Meşə',f:0x0a1f10,h:.33,b:0xa8d4b0,c:0xd8923a},{n:'Okean',f:0x06203a,h:.56,b:0x9cd0e8,c:0xd8a050},{n:'Nether',f:0x2a0606,h:.98,b:0xd49090,c:0xe8903a},{n:'Mədən',f:0x1a1608,h:.14,b:0xd8d0a8,c:0xc88a3a},{n:'End',f:0x0c0616,h:.78,b:0xc8b8e8,c:0xb89ae0},{n:'Cəngəllik',f:0x0c2410,h:.3,b:0x9fd8a0,c:0xd8923a},{n:'Mərcan rifi',f:0x0a2a30,h:.5,b:0xf0a8b0,c:0xe0905a},{n:'Vulkan',f:0x2a0a04,h:.03,b:0xc0a090,c:0xe86a2a},{n:'Göy adası',f:0x1a3a6a,h:.6,b:0xf0f4ff,c:0xe0a050},{n:'Kosmos',f:0x05030f,h:.82,b:0xd0c8ff,c:0xa070ff}];
+ZN.concat(AZ).forEach(function(z){z.mh=new THREE.MeshLambertMaterial({color:z.b,emissive:0x2a1020,map:texSteel});z.mc=new THREE.MeshLambertMaterial({color:z.c,map:texCrate});z.mw=[0,1,2].map(function(i){return new THREE.MeshLambertMaterial({color:new THREE.Color().setHSL((z.h+i*.03)%1,.45,.1+i*.03)})})});
+var mGold=new THREE.MeshLambertMaterial({color:0xffd21f,emissive:0xd09000});
+var mPlayer=new THREE.MeshLambertMaterial({color:0x4de0ff,emissive:0x0a3a50});
+scene.background=new THREE.Color(ZN[0].f);scene.fog=new THREE.Fog(ZN[0].f,14,70);
+
+/* costumes */
+var SK=[{n:'Mavi',c:0x4de0ff,a:'eyes',p:0},{n:'Qırmızı',c:0xe83c3c,a:'band',p:100},{n:'Yaşıl',c:0x4be06a,a:'frog',p:100},{n:'Boz',c:0x9aa6b8,a:'ant',p:200},{n:'Sarı',c:0xffc83d,a:'crown',p:250},{n:'Çəhrayı',c:0xff7ab8,a:'heart',p:300},{n:'Bənövşəyi',c:0x8a5ae0,a:'hat',p:400},{n:'Lapis bloku',c:0x2a50d8,a:'',p:500,blk:'lapis'},{n:'Qızıl bloku',c:0xffd23a,a:'',p:600,blk:'gold'},{n:'Almaz bloku',c:0x3deddb,a:'',p:800,blk:'diamond'},{n:'Mavi almaz bloku',c:0x39b0f0,a:'',p:900,blk:'diamond2'},{n:'Netherit bloku',c:0x2c3358,a:'',p:1200,blk:'nether'},{n:'Çimən bloku',c:0x5aa83a,a:'',p:300,blk:'grass'}];
+var NB=[['Ağ yun','wool',0xeeeeee],['Narıncı yun','wool',0xf08a24],['Magenta yun','wool',0xc74ebd],['Açıq mavi yun','wool',0x3aafd9],['Sarı yun','wool',0xf8c627],['Lay yun','wool',0x70b919],['Çəhrayı yun','wool',0xed8dac],['Boz yun','wool',0x3e4447],['Açıq boz yun','wool',0x8e8e86],['Firuzəyi yun','wool',0x158991],['Bənövşəyi yun','wool',0x792aac],['Mavi yun','wool',0x35399d],['Qəhvəyi yun','wool',0x724728],['Yaşıl yun','wool',0x546d1b],['Qırmızı yun','wool',0xa12722],['Qara yun','wool',0x141519],['Daş','noise',0x7d7d7d],['Kömür filizi','ore',0x7d7d7d,0x111111],['Dəmir filizi','ore',0x7d7d7d,0xd8af93],['Mis filizi','ore',0x7d7d7d,0xe07a4a],['Qırmızı daş filizi','ore',0x7d7d7d,0xff2222],['Zümrüd filizi','ore',0x7d7d7d,0x17dd62],['Lapis filizi','ore',0x7d7d7d,0x2a50d8],['Qızıl filizi','ore',0x7d7d7d,0xfcee4b],['Almaz filizi','ore',0x7d7d7d,0x5decf5],['Kvarts','slab',0xece6df],['Ametist','slab',0x8c5fd0],['Obsidian','noise',0x1b1030],['Prizmarin','noise',0x5fb5a6],['Qum','noise',0xdbcf9a],['Qar','noise',0xf2f6fa],['Buz','slab',0x9cc8f0],['Balqabaq','pump',0xe07a1a],['Qarpız','melon',0x4a9a2a],['Taxta','plank',0xb8935a],['Kərpic','brick',0xa04a3a],['Parıldayan daş','glow',0xf0c060],['Palıd taxta','plank',0xb48a52],['Küknar taxta','plank',0x7a5a34],['Tozağacı taxta','plank',0xd8cc98],['Akasiya taxta','plank',0xc0623a],['Tünd palıd','plank',0x4a3322],['Qırmızı kərpic','brick',0xb04030],['Palçıq kərpic','brick',0x6a4a30],['Nether kərpic','brick',0x4a1a1a],['Prizmarin kərpic','brick',0x5fb5a6],['Qırmızı daş','noise',0x8a3030],['Ruh qumu','noise',0x5a4638],['Torpaq','noise',0x86603a],['Çınqıl','noise',0x8a8683],['Gil','noise',0xa4a9b8],['Terrakota','noise',0xb06a4a],['Mərmər','slab',0xe8e4e0],['Mis bloku','slab',0xd0743c],['Dəmir bloku','slab',0xdcdcdc],['Zümrüd bloku','slab',0x2ec060],['Qırmızı daş bloku','slab',0xc02020],['Kömür bloku','noise',0x1a1a1e],['Bal bloku','glow',0xf0a020],['Yaşıl jele','glow',0x6ad050],['Dəniz fənəri','glow',0x9ae0d0],['Mərcan','glow',0xf070a0],['Qum daşı','plank',0xdbcf9a],['Qırmızı qum','noise',0xb5502a],['Nanə bloku','slab',0x8affc0],['Nether qızılı','ore',0x6a2a2a,0xfcee4b],['Kvarts filizi','ore',0x6a2a2a,0xece6df]];
+NB.forEach(function(b,i){SK.push({n:b[0],c:b[2],a:'',p:150+i*30,blk:'x'+i,spec:{t:b[1],b:b[2],a:b[3],e:b[1]==='glow'?0xaa8830:0}})});
+var TR=[{n:'Yoxdur',p:0}];
+(function(){var SY=[{n:'Düz',l:1},{n:'İkiqat',l:2,sp:.3},{n:'Üçqat',l:3,sp:.3},{n:'Dalğalı',l:1,amp:.35,fr:.55,ph:3},{n:'Zigzaq',l:1,amp:.3,fr:1.4,ph:6},{n:'Spiral',l:2,amp:.32,fr:.6,ph:4,anti:1},{n:'Cizgili',l:1,dash:1},{n:'Cizgili ikiqat',l:2,sp:.3,dash:1},{n:'Titrəyən',l:1,flick:1},{n:'Genişlənən',l:1,rev:1}],WN=['Nazik','Orta','Qalın','Enli','Nəhəng'],WV=[.3,.45,.62,.8,1.05],PC=[0xff6aa8,0xffe45a,0x3deddb,0xff8a1a,0xeaf6ff,0x9a5aff,0x3dff7a,0x3a8aff,0xffc83d,0xff3a3a];
+  for(var i=0;i<49;i++){var st=SY[Math.floor(i/5)],wi=i%5;TR.push({n:st.n+' · '+WN[wi],c:PC[i%10],p:40+TR.length*12,st:st,w:WV[wi]})}})();
+var RN=22,hist=[],hAcc=0,ribs=[],rGrad=null,rDash=null;
+(function(){function gt(dash){var c=document.createElement('canvas');c.width=1;c.height=64;var g=c.getContext('2d');for(var y=0;y<64;y++){var a=1-y/63;if(dash)a*=((y/6|0)%2)?.12:1;a=Math.max(0,a);var v=(255*a)|0;g.fillStyle='rgb('+v+','+v+','+v+')';g.fillRect(0,y,1,1)}return new THREE.CanvasTexture(c)}
+  rGrad=gt(0);rDash=gt(1);
+  for(var ri=0;ri<3;ri++){var geo=new THREE.BufferGeometry(),nv=(RN+1)*2,pos=new Float32Array(nv*3),uv=new Float32Array(nv*2),idx=[];
+    for(var q=0;q<=RN;q++){uv[q*4]=0;uv[q*4+1]=1-q/RN;uv[q*4+2]=1;uv[q*4+3]=1-q/RN;if(q<RN){var a0=q*2;idx.push(a0,a0+1,a0+2,a0+1,a0+3,a0+2)}}
+    geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('uv',new THREE.BufferAttribute(uv,2));geo.setIndex(idx);
+    var rb=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,alphaMap:rGrad,side:THREE.DoubleSide,depthWrite:false}));rb.frustumCulled=false;rb.visible=false;scene.add(rb);ribs.push(rb)}})();
+var COL=[{n:'Standart',c:0,p:0},{n:'Qırmızı',c:0xff3a3a,p:40},{n:'Narıncı',c:0xff8a1a,p:52},{n:'Sarı',c:0xffd21f,p:64},{n:'Limon',c:0xd8ff3a,p:76},{n:'Yaşıl',c:0x3dff7a,p:88},{n:'Zümrüd',c:0x2ee06a,p:100},{n:'Nanə',c:0x8affc8,p:112},{n:'Firuzəyi',c:0x3deddb,p:124},{n:'Buz mavisi',c:0x9fe4ff,p:136},{n:'Mavi',c:0x3da8ff,p:148},{n:'Göy',c:0x2a6aff,p:160},{n:'Lacivərd',c:0x3a3aff,p:172},{n:'Bənövşəyi',c:0xb04aff,p:184},{n:'Lilaş',c:0xc89aff,p:196},{n:'Çəhrayı',c:0xff6aa8,p:208},{n:'Çiyələk',c:0xff3a7a,p:220},{n:'Qızılı',c:0xffc83d,p:232},{n:'Gümüşü',c:0xcfd8e8,p:244},{n:'Ağ',c:0xffffff,p:256},{n:'Şaftalı',c:0xffb08a,p:268},{n:'Mərcan',c:0xff7a6a,p:280},{n:'Qızılgül',c:0xff8ab8,p:292},{n:'Bal',c:0xe8a020,p:304},{n:'Qəhvəyi',c:0xb87a3a,p:316},{n:'Qum',c:0xe8d8a0,p:328},{n:'Zeytun',c:0x9aa83a,p:340},{n:'Yarpaq',c:0x5ab83a,p:352},{n:'Okean',c:0x1a9ab8,p:364},{n:'Safir',c:0x2050c0,p:376},{n:'Ametist',c:0x9a5ae0,p:388},{n:'Fuşya',c:0xe83aff,p:400},{n:'Alov',c:0xff5a1a,p:412},{n:'Lava',c:0xff3a00,p:424},{n:'Qan',c:0xc81818,p:436},{n:'Gül',c:0xffa0c8,p:448},{n:'Süd',c:0xfff0e0,p:460},{n:'Duman',c:0xa8b0c0,p:472},{n:'Polad',c:0x7a8aa8,p:484},{n:'Neon yaşıl',c:0x39ff14,p:496},{n:'Neon çəhrayı',c:0xff10f0,p:508},{n:'Neon mavi',c:0x10f0ff,p:520},{n:'Neon sarı',c:0xf0ff10,p:532},{n:'Elektrik',c:0x50a0ff,p:544},{n:'Kosmos',c:0x6a2aff,p:556},{n:'Şəfəq',c:0xffb0d8,p:568},{n:'Gün batımı',c:0xff7a3a,p:580},{n:'Aysar',c:0xe0e0ff,p:592},{n:'Qızıl işıq',c:0xffe070,p:604},{n:'Zümrüd işıq',c:0x50ffa0,p:616}],colSel=+LS('sd_col')||0;
+(function(){var SHn=[['heart','ürək'],['star','ulduz'],['oct','almaz'],['cone','alov'],['box','piksel'],['sphere','qabarcıq'],['tetra','piramida'],['ico','gövhər'],['disc','sikkə'],['ring','halqa']],CC=[['Qırmızı',0xff3a3a],['Sarı',0xffd21f],['Yaşıl',0x3dff7a],['Mavi',0x3da8ff],['Bənövşəyi',0xb04aff]];
+  for(var i=0;i<50&&TR.length<50;i++){var sh=SHn[i%10],cl=CC[(i+((i/10)|0))%5],nm=cl[0]+' '+sh[1];if(TR.some(function(t){return t.n===nm}))continue;TR.push({n:nm,c:cl[1],p:Math.round((120+TR.length*14)/10)*10,sh:sh[0]})}})();
+var own={s:[0],t:[0]};try{own=JSON.parse(LS('sd_own'))||own}catch(e){}
+var wallet=+LS('sd_coins')||0,skin=+LS('sd_skin')||0,trail=+LS('sd_trail')||0;
+if(!own.c)own.c=[0];if(own.s.indexOf(skin)<0)skin=0;if(own.t.indexOf(trail)<0)trail=0;if(own.c.indexOf(colSel)<0)colSel=0;
+var ST={games:0,maxDepth:0,totalGold:0,smashes:0},advDone=+LS('sd_adv')||0,SLOTS=[-1,-1,-1,-1];
+try{ST=Object.assign(ST,JSON.parse(LS('sd_st')))}catch(e){}
+try{var q0=JSON.parse(LS('sd_slots'));if(q0&&q0.length===4)SLOTS=q0}catch(e){}
+var MD=[{i:'🏁',n:'Başlanğıc',d:'İlk oyun',f:function(t){return t.games>=1}},{i:'⬇️',n:'100 metr',d:'Bir oyunda 100 m',f:function(t){return t.maxDepth>=100}},{i:'🏔️',n:'500 metr',d:'Bir oyunda 500 m',f:function(t){return t.maxDepth>=500}},{i:'🪙',n:'Qızıl ovçusu',d:'Cəmi 50 qızıl',f:function(t){return t.totalGold>=50}},{i:'💰',n:'Zəngin',d:'Cəmi 500 qızıl',f:function(t){return t.totalGold>=500}},{i:'🔨',n:'Qıran',d:'Boz bloku qır',f:function(t){return t.smashes>=1}},{i:'🧭',n:'Macəraçı',d:'1-ci bölmə',f:function(t){return t.adv>=1}},{i:'❄️',n:'Qar kralı',d:'5-ci bölmə',f:function(t){return t.adv>=5}},{i:'🧊',n:'Buz ustası',d:'10-cu bölmə',f:function(t){return t.adv>=10}},{i:'🔥',n:'Od ustası',d:'15-ci bölmə',f:function(t){return t.adv>=15}},{i:'🏜️',n:'Çöl sahibi',d:'20-ci bölmə',f:function(t){return t.adv>=20}},{i:'🌲',n:'Meşə dostu',d:'30-cu bölmə',f:function(t){return t.adv>=30}},{i:'🌋',n:'Nether ustası',d:'40-cı bölmə',f:function(t){return t.adv>=40}},{i:'🏅',n:'Yarım əsr',d:'50-ci bölmə',f:function(t){return t.adv>=50}},{i:'🐠',n:'Rif ustası',d:'60-cı bölmə',f:function(t){return t.adv>=60}},{i:'☁️',n:'Bulud gəzəni',d:'70-ci bölmə',f:function(t){return t.adv>=70}},{i:'👑',n:'Çempion',d:'75-ci bölmə',f:function(t){return t.adv>=75}}];
+var STR=["Kub qarlı dağın yarığına yıxıldı. Çıxış yolu aşağıdadır.","Buzlu küləklər güclənir, qarın altında qızıllar parlayır.","Qar qalınlaşdı. Qəhvəyi qutular yolu bağlayır.","Uzaqdan səs gəlir: aşağıda kimsə kubu gözləyir.","Qarlığın dibi yaxındır. Son boz bloklardan ehtiyatlı ol!","Kub buz mağarasına düşdü, hər yer şəffaf kristaldır.","Buz dirəkləri arasında gizli bir yol var.","Mağara titrəyir, bloklar sıxlaşır.","Dondurucu külək kubu sürətləndirir.","Buzun ürəyi parlayır, sonuncu keçid açılır.","Yer isinir. Kub lava dərinliyinə yaxınlaşır.","Qızmar bloklar, qızıl parıltılar. Yanma!","Lava çayları divarlardan axır.","Güc barını doldur, boz daşları qırmaq vaxtıdır.","Odun mərkəzi: tək səhv hər şeyi bitirər.","Kub qumlu çöldə gözünü açdı, günəş yandırır.","Qum fırtınası bloklar arasından keçir.","Qədim xarabalıqlar. Qızıl hər yerdədir.","Çöl dərinlikləri sıxlaşır, sürət artır.","Çölün sirri: aşağıda qədim bir qapı var.","Qapıdan keçdin, gün işığı yoxdur.","Qaranlıqda yalnız qızıllar parlayır.","Səs yoxdur. Yalnız düşüş və bloklar.","Sonuncu mühafizəçi bloklar yolu kəsir.","Qaranlığın sonu: işıq nüvəsi uzaqda parlayır. Hələ yarı yoldasan!","Kub canlı meşənin kökləri arasına düşdü, yarpaqlar xışıldayır.","Ağacların gövdəsi yolu daraldır, işıq qırıq-qırıq düşür.","Meşənin ruhu kubu izləyir. Addımlarını diqqətlə at.","Köklər bloklara dolaşıb, güc barını boş buraxma.","Meşənin sonu: aşağıda qaranlıq su parıldayır.","Kub okeanın dərinliyinə sürüşür, hər yer mavidir.","Mərcan blokları arasında tikanlar gizlənib.","Axın kubu aşağı sürükləyir, sürət artır.","Dərin sular susur. Yalnız qızılların parıltısı var.","Okeanın dibi: qədim bir qapı qırmızı işıq saçır.","Kub Netherə düşdü, hava od kimi yanır.","Lava göllərinin üstündən yol qalmayıb.","TNT bloklarının partlayışı divarları titrədir.","Od kralının mühafizəçiləri yolu kəsir.","Netherin ürəyi: tək səhv hər şeyi külə döndərər.","Kub qızıl və almaz mədəninə yuvarlandı.","Almazlar parlayır, amma tikanlar da çoxdur.","Hərəkət edən tikanlar mədənin dar yollarını qoruyur.","Mədən dayaqları çatlayır, sürət sürətə qarışır.","Mədənin dibi: işıqlı bir dəhliz uzaqda görünür.","Dəhlizdən keçdin. Burada nə yer var, nə səma.","Boşluq səssizdir. Bloklar havada üzür.","Ən sıx bloklar, ən sürətli düşüş.","Son mühafizəçi tikanlı bloklarla yolu bağlayır.","End-in sonu görünür, amma işıq nüvəsi hələ daha dərindədir!","Kub sıx cəngəlliyə düşdü, lianalar yolu toxuyub.","Quşlar susdu. Cəngəllik kubu izləyir.","Nəhəng köklər bloklara dolaşıb, güc barını qoru.","Rütubətli hava ağırlaşır, düşüş sürətlənir.","Cəngəlliyin altından mərcan işığı görünür.","Kub rəngli mərcan rifinə sürüşdü.","Balıq sürüləri bloklar arasında yol göstərir.","Mərcanlar tikanla örtülüb, hər addım vacibdir.","Dərin axın kubu sürükləyir.","Rifin dibində vulkanın gurultusu eşidilir.","Kub vulkanın bacasına düşdü, hava yanır.","Kül yağır, lava qabarcıqları partlayır.","Hərəkət edən tikanlar kraterin kənarını qoruyur.","Yer sarsılır, bloklar sıxlaşır.","Vulkanın ağzı: yuxarıdan səma görünür.","Kub bulud arasından üzən adaya düşdü.","Külək blokları yelləndirir, gözünü açıq saxla.","Ada parçalanır, hər keçid daralır.","Ulduzlar yaxınlaşır, havada soyuqluq var.","Adanın kənarında kosmosa açılan qapı var.","Kub kosmosa düşdü, ağırlıq yoxdur.","Asteroid blokları qaranlıqda parlayır.","Kosmik tikanlar ən dar yolları bağlayır.","İşıq nüvəsi artıq görünür, son sürət!","Dünyanın ən dibi: işıq nüvəsi qarşındadır. Bir son düşüş!"];
+function medalsNow(){var t={adv:advDone,games:ST.games,maxDepth:ST.maxDepth,totalGold:ST.totalGold,smashes:ST.smashes};return MD.map(function(m,i){return m.f(t)?i:-1}).filter(function(i){return i>=0})}
+function mIcons(){return SLOTS.filter(function(i){return i>=0&&MD[i]}).map(function(i){return MD[i].i}).join('')}
+function endRun(na){var b=medalsNow();ST.games++;ST.maxDepth=Math.max(ST.maxDepth,Math.floor(S.depth));ST.totalGold+=S.gold;LS('sd_st',JSON.stringify(ST));if(na>advDone){advDone=na;LS('sd_adv',na)}var a=medalsNow();return a.filter(function(i){return b.indexOf(i)<0}).map(function(i){return MD[i].n}).join(', ')}
+var player=new THREE.Mesh(BOX,mPlayer);player.scale.setScalar(.8);scene.add(player);
+var streaks=[];for(var si=0;si<36;si++){var stk=new THREE.Mesh(BOX,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.2}));stk.scale.set(.03,1.4,.03);stk.position.set((Math.random()-.5)*7,-Math.random()*40,1.5+Math.random()*3);scene.add(stk);streaks.push(stk)}
+var aura=new THREE.Mesh(new THREE.SphereGeometry(.8,12,10),new THREE.MeshBasicMaterial({color:0xff7ab8,transparent:true,opacity:.3}));aura.visible=false;scene.add(aura);
+var motes=[];for(var mj=0;mj<45;mj++){var mo=new THREE.Mesh(BOX,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.45}));mo.scale.setScalar(.06+Math.random()*.08);mo.position.set((Math.random()-.5)*8,-Math.random()*30,(Math.random()-.5)*5);scene.add(mo);motes.push(mo)}
+var outM=new THREE.MeshBasicMaterial({color:0x000000,side:THREE.BackSide}),wm=new THREE.MeshLambertMaterial({color:0xffffff}),bm=new THREE.MeshLambertMaterial({color:0x111111}),rm=new THREE.MeshLambertMaterial({color:0xff3030,emissive:0x802020});
+function acc(g,m,x,y,z,sx,sy,sz){var o=new THREE.Mesh(BOX,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);player.add(o)}
+function pixTex(c,sp){var cv=document.createElement('canvas');cv.width=cv.height=16;var g=cv.getContext('2d'),R=(c>>16)&255,G=(c>>8)&255,B=c&255;
+  for(var y=0;y<16;y++)for(var x=0;x<16;x++){var k=.75+Math.random()*.45,r=Math.min(255,R*k)|0,gg=Math.min(255,G*k)|0,b=Math.min(255,B*k)|0;
+    if(Math.random()<.1){r=(sp>>16)&255;gg=(sp>>8)&255;b=sp&255}
+    g.fillStyle='rgb('+r+','+gg+','+b+')';g.fillRect(x,y,1,1)}
+  var t=new THREE.CanvasTexture(cv);t.magFilter=t.minFilter=THREE.NearestFilter;return t}
+var pm=new THREE.MeshLambertMaterial({color:0x6a3fb0});
+function applySkin(i){skin=i;LS('sd_skin',i);var s=SK[i],A=s.a;if(s.blk){if(!s.fc)s.fc=blockFaces(s.blk,s.spec);player.material=s.fc.mats}else{player.material=mPlayer;mPlayer.map=null;mPlayer.color.setHex(s.c);mPlayer.needsUpdate=true;mPlayer.emissive.setHex(s.c).multiplyScalar(.45)}
+  while(player.children.length)player.remove(player.children[0]);
+  var ol=new THREE.Mesh(BOX,outM);ol.scale.set(1.14,1.14,1.14);player.add(ol);
+  if(A==='eyes'||A==='band'||A==='ant'||A==='hat'||A==='heart'){var ey=A==='heart'?.3:.12;acc(0,wm,-.22,ey,.5,.22,.22,.08);acc(0,wm,.22,ey,.5,.22,.22,.08);acc(0,bm,-.22,ey,.55,.1,.1,.05);acc(0,bm,.22,ey,.55,.1,.1,.05)}
+  if(A==='band')acc(0,bm,0,.3,0,1.06,.18,1.06);
+  if(A==='crown'){acc(0,mGold,0,.6,0,.9,.25,.9);acc(0,mGold,-.3,.8,0,.2,.2,.2);acc(0,mGold,.3,.8,0,.2,.2,.2);acc(0,mGold,0,.8,0,.2,.2,.2);acc(0,bm,-.2,.1,.5,.14,.14,.08);acc(0,bm,.2,.1,.5,.14,.14,.08)}
+  if(A==='ant'){acc(0,bm,0,.7,0,.08,.4,.08);acc(0,rm,0,.95,0,.2,.2,.2)}
+  if(A==='frog'){acc(0,wm,-.28,.6,.1,.3,.3,.3);acc(0,wm,.28,.6,.1,.3,.3,.3);acc(0,bm,-.28,.6,.3,.14,.14,.1);acc(0,bm,.28,.6,.3,.14,.14,.1)}
+  if(A==='heart'){['.X.X.','XXXXX','.XXX.','..X..'].forEach(function(r,ri){for(var ci=0;ci<5;ci++)if(r[ci]==='X')acc(0,rm,(ci-2)*.17,.08-ri*.17,.52,.17,.17,.08)})}
+  if(A==='hat'){acc(0,pm,0,.55,0,1.1,.1,1.1);acc(0,pm,0,.72,0,.75,.25,.75);acc(0,pm,0,.95,0,.45,.25,.45);acc(0,mGold,0,1.15,0,.2,.2,.2)}}
+var heartGeo=(function(){var sh=new THREE.Shape();sh.moveTo(0,-.5);sh.bezierCurveTo(-.9,.1,-.5,.75,0,.3);sh.bezierCurveTo(.5,.75,.9,.1,0,-.5);var g=new THREE.ExtrudeGeometry(sh,{depth:.25,bevelEnabled:false});g.translate(0,0,-.12);return g})();
+function applyTrail(i){trail=i;LS('sd_trail',i);var T=TR[i],cc=COL[colSel].c;torch.color.setHex(cc||T.c||0xffb060);torch.intensity=(cc||T.g)?2.8:1.6}
+function applyCol(i){colSel=i;LS('sd_col',i);applyTrail(trail)}
+function trailFx(dt){var T=TR[trail],on=T.st&&(playing||shop)&&S.alive&&player.visible;
+  if(!on){for(var h=0;h<3;h++)ribs[h].visible=false;hist.length=0;return}
+  hAcc+=dt;while(hAcc>.03){hAcc-=.03;hist.unshift([S.x,S.y]);if(hist.length>RN)hist.pop()}
+  if(hist.length<3)return;
+  var st=T.st,col=COL[colSel].c||T.c,nl=st.l,tm=performance.now()/1000,fl=st.flick?(.6+Math.random()*.8):1;
+  for(var li=0;li<3;li++){var m=ribs[li];if(li>=nl){m.visible=false;continue}
+    m.visible=true;m.material.color.setHex(col);m.material.alphaMap=st.dash?rDash:rGrad;
+    var off=(li-(nl-1)/2)*(nl>1?T.w*1.15:0),pa=m.geometry.attributes.position,ph=(st.anti&&li===1)?Math.PI:0;
+    for(var q=0;q<=RN;q++){var pt=q===0?[S.x,S.y+.1]:hist[Math.min(q-1,hist.length-1)],f=q/RN,w=T.w*(nl>1?.55:1)*fl*(st.rev?(.3+f*.9):(1-f*.65))*.5,
+      x=pt[0]+off+(st.amp?Math.sin(q*st.fr+tm*st.ph+ph)*st.amp*Math.min(1,f*3):0),y=pt[1]+.15+(q>hist.length?(q-hist.length)*.3:0);
+      pa.setXYZ(q*2,x-w,y,1.0);pa.setXYZ(q*2+1,x+w,y,1.0)}
+    pa.needsUpdate=true}}
+applySkin(skin);
+
+var layers=[],parts=[],S,last=0,playing=false,keys={},drag=null,zoneNow=-1;
+function mk(m,x,y,s,z){var o=new THREE.Mesh(BOX,m);o.position.set(x,y,z||0);o.scale.set(s[0],s[1],s[2]);scene.add(o);return o}
+function addLayer(k){
+  var y=-k*GAP-6,z=S.zs||ZN[Math.floor(k/ZL)%ZN.length],L={y:y,items:[],objs:[]},c=[],i,r,hp=S.hp||(.2+Math.min(.15,k*.003));
+  for(i=0;i<W;i++){r=Math.random();c.push(r<.5?0:r<.5+(.5-hp)*.9?1:2)}
+  var s=Math.floor(Math.random()*(W-1));c[s]=0;if(!(S.g1&&Math.random()<(S.adv>=36?1:.5)))c[s+1]=0;
+  for(i=0;i<W;i++){var x=i-3,o=null,t=c[i],mv=0,ty=t,D=S.adv?S.adv:1+Math.floor(k*.6);
+    if(t===2){var pk=Math.random(),sp=D>=4?Math.min(.45,(D-3)*.012):0,lv=D>=11?Math.min(.3,(D-10)*.012):0,tn=D>=16?.12:0,mo=D>=21?Math.min(.28,(D-20)*.008):0;
+      if(pk<mo){ty=4;mv=1}else if(pk<mo+sp)ty=4;else if(pk<mo+sp+lv)ty=9;else if(pk<mo+sp+lv+tn)ty=5}
+    if(ty===4)o=mkSpike(x,y,mv);else if(ty===9)o=mk(mLava,x,y,[.96,.9,.96]);else if(ty===5)o=mk(mTnt,x,y,[.92,.92,.92]);
+    else if(ty===2)o=mk(z.mh,x,y,[.96,.9,.96]);else if(ty===1)o=mk(z.mc,x,y,[.92,.8,.92]);
+    else{var q=Math.random();ty=0;
+      if(q<.24){ty=3;o=mk(mGold,x,y,[.55,.55,.1])}
+      else if(D>=6&&q<.285){ty=7;o=put(heartGeo,mHeartM,x,y,.55)}
+      else if(D>=18&&q<.33){ty=8;o=put(octGeo,mDia,x,y,.5)}}
+    if(o)L.items.push({t:ty,x:x,o:o,bx:x,mv:mv,ph:Math.random()*6.28})}
+  var w=z.mw[k%3];
+  L.objs.push(mk(w,-4.6,y,[2,GAP,2]),mk(w,4.6,y,[2,GAP,2]),mk(w,0,y,[11,GAP,1],-1.6));
+  return L}
+function boom(x,y,col,n){for(var i=0;i<n;i++){var cj=new THREE.Color(col).offsetHSL((Math.random()-.5)*.05,0,(Math.random()-.5)*.3),m=new THREE.MeshLambertMaterial({color:cj,emissive:cj,emissiveIntensity:.3});var p=new THREE.Mesh(BOX,m);p.position.set(x,y,0);scene.add(p);parts.push({o:p,vx:(Math.random()-.5)*8,vy:Math.random()*5+1,vz:(Math.random()-.2)*6,l:1,s:.14+Math.random()*.22})}}
+function clearL(L){L.items.forEach(function(it){scene.remove(it.o)});L.objs.forEach(function(o){scene.remove(o)})}
+function reset(){if(S&&S.floor)scene.remove(S.floor);layers.forEach(clearL);parts.forEach(function(p){scene.remove(p.o)});layers=[];parts=[];zoneNow=-1;
+  S={x:0,tx:0,y:0,v:6,t:0,gold:0,depth:0,next:0,alive:true,shake:0,pw:0,full:false,shield:0,adv:0,goal:0,zs:null,hp:0,nm:'',floor:null};player.visible=true}
+function fill(){while(S.next*GAP+6<-S.y+55&&(!S.goal||S.next*GAP+6<S.goal+8)){layers.push(addLayer(S.next));S.next++}if(S.goal&&!S.floor&&S.next*GAP+6>=S.goal+8)S.floor=mkFinish(S.goal)}
+reset();fill();
+
+/* ---------- ONLINE ---------- */
+var DB=null,UID=null,NAME=LS('sd_user')||'',best=+LS('sd_best')||0;
+var ready=(async function(){try{if(!window.claude)return;var u=await claude.use('user'),d=await claude.use('db');if(u&&d){UID=await u.id();DB=d}}catch(e){}})();
+/* Ortaq skor tablosu: Firebase Realtime Database URL-ni bura yaz. Məs: 'https://layihe-default-rtdb.firebaseio.com' */
+var FB_URL='';
+function fbBase(){return FB_URL.replace(/\/$/,'')}
+async function fbPush(sc,g){try{var u=fbBase()+'/scores/'+encodeURIComponent(NAME.toLowerCase())+'.json',o=null;try{o=await (await fetch(u)).json()}catch(e){}
+  o=o||{};var mm=mIcons();if(o.name===NAME&&(o.best|0)>=sc&&(o.gold|0)>=g&&o.m===mm&&o.joined)return;
+  await fetch(u,{method:'PUT',body:JSON.stringify({name:NAME,best:Math.max(sc,o.best|0),gold:Math.max(g,o.gold|0),m:mm,joined:o.joined||Date.now(),at:Date.now()})})}catch(e){}}
+function drawBoard(L,arr){L.textContent='';if(!arr.length){var e=document.createElement('div');e.textContent='Hələ heç kim yoxdur. Birinci sən ol!';L.appendChild(e);return}
+  arr.forEach(function(o,i){var r=document.createElement('div'),a=document.createElement('span'),b=document.createElement('span');a.textContent=(i+1)+'. '+String(o.name||'?').slice(0,14)+' '+String(o.m||'').slice(0,16);b.textContent=(o.best|0)+' xal · '+(o.gold|0)+' qızıl';r.appendChild(a);r.appendChild(b);L.appendChild(r)})}
+function fbBoard(L){var load=async function(){try{var r=await (await fetch(fbBase()+'/scores.json')).json(),arr=r?Object.keys(r).map(function(k){return r[k]}):[];arr.sort(function(a,b){return (b.best|0)-(a.best|0)});drawBoard(L,arr.slice(0,50))}catch(e){L.textContent='Cədvəl açılmadı.'}};load();var t=setInterval(load,10000);unsub=function(){clearInterval(t)}}
+function pushScore(sc,g){g=g|0;if(NAME&&FB_URL)fbPush(sc,g);if(!DB||!UID||!NAME)return;var mm=mIcons(),r=DB.doc('scores/'+UID);r.get().then(function(q){var o=q.exists?q.data():null;if(!o||sc>o.best||g>(o.gold|0)||o.name!==NAME||o.m!==mm||!o.joined)return r.set({name:NAME,best:Math.max(sc,o?o.best|0:0),gold:Math.max(g,o?o.gold|0:0),m:mm,joined:(o&&o.joined)||Date.now(),at:Date.now()})}).catch(function(){})}
+async function hs(a,b){try{var d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(a+':'+b));return Array.from(new Uint8Array(d)).map(function(x){return ('0'+x.toString(16)).slice(-2)}).join('')}catch(e){return a+b}}
+async function getAcc(){await ready;try{if(DB&&UID){var q=await DB.doc('data/users/'+UID+'/account').get();return q.exists?q.data():null}}catch(e){}try{return JSON.parse(LS('sd_acc')||'null')}catch(e){return null}}
+async function putAcc(o){await ready;try{if(DB&&UID){await DB.doc('data/users/'+UID+'/account').set(o);return}}catch(e){}LS('sd_acc',JSON.stringify(o))}
+
+/* ---------- UI ---------- */
+var ov=$('ov'),unsub=null;
+var shop=false;
+function view(h,cls){shop=false;if(unsub){unsub();unsub=null}ov.className=cls||'';ov.innerHTML=h;ov.style.display='flex';$('hud').style.display='none';
+  Array.prototype.forEach.call(ov.querySelectorAll('button'),function(b){b.addEventListener('click',function(){ac();sfx('ui')})})}
+function on(id,f){var e=$(id);if(e)e.addEventListener('click',f)}
+function menu(){var sm='style="min-width:0;width:138px;font-size:16px;padding:11px 8px"';
+  view('<h1 style="font-size:38px">SONSUZ<br>DÜŞÜŞ</h1><button class="b p" id="pl">▶ Başla: Sonsuz oyun</button><button class="b p" id="ad">▶ Başla: Macəra (hekayəli)</button><div class="sk" style="gap:10px;margin-top:8px;max-width:300px"><button class="b" id="ks" '+sm+'>Kostyumlar</button><button class="b" id="lbb" '+sm+'>Skor</button><button class="b" id="ac" '+sm+'>Hesab</button><button class="b" id="st" '+sm+'>Ayarlar</button></div><p>Rekord: '+best+' · Qızıl: '+wallet+'</p>');
+  on('pl',function(){start(0)});on('ad',advMap);on('ks',function(){skins('s')});on('lbb',board);on('ac',acct);on('st',sets);if(NAME)pushScore(best,0);music('m')}
+function sets(){var r=function(k,t){var v=Math.round(opt[k]*100);return '<div class="row"><span>'+t+'</span><input type="range" min="0" max="100" value="'+v+'" data-k="'+k+'"><b>'+v+'</b></div>'};
+  view('<h2>Ayarlar</h2>'+r('sfx','Səs effektləri')+r('mm','Ana menyu musiqisi')+r('gm','Oyun musiqisi')+'<button class="b" id="bk">Geri</button>');
+  Array.prototype.forEach.call(ov.querySelectorAll('input[type=range]'),function(b){var k=b.getAttribute('data-k');
+    b.addEventListener('input',function(){opt[k]=b.value/100;saveOpt();b.nextSibling.textContent=b.value;if(k==='mm'&&!mus)music('m')});
+    b.addEventListener('change',function(){if(k==='sfx'){ac();sfx('coin')}})});
+  on('bk',menu)}
+function skins(tab){tab=tab||'s';var L=tab==='s'?SK:tab==='t'?TR:COL,cur=tab==='s'?skin:tab==='t'?trail:colSel;
+  var h='<div class="row" style="min-width:290px;margin:0 0 8px"><b style="width:auto">Qızıl: '+wallet+'</b><span><button class="tg '+(tab==='s'?'on':'')+'" id="t1" style="width:auto;padding:7px 10px">Kostyum</button> <button class="tg '+(tab==='t'?'on':'')+'" id="t2" style="width:auto;padding:7px 10px">Quyruq</button> <button class="tg '+(tab==='c'?'on':'')+'" id="t3" style="width:auto;padding:7px 10px">Rəng</button></span></div><div class="sk">';
+  L.forEach(function(x,i){var ow=own[tab].indexOf(i)>=0,col='#'+('000000'+(x.c||0x333333).toString(16)).slice(-6);
+    h+='<button data-i="'+i+'" class="'+(i===cur?'on':'')+'"><i style="'+(x.blk?'background:url('+(x.fc||(x.fc=blockFaces(x.blk,x.spec))).icon+');background-size:cover;image-rendering:pixelated':'background:'+col)+'"></i>'+x.n+'<br>'+(i===cur?'Seçilib':ow?'Seç':x.p+' qızıl')+'</button>'});
+  view(h+'</div><p id="msg" style="min-height:20px"></p><button class="b" id="bk">Geri</button>','shop');shop=true;
+  on('t1',function(){skins('s')});on('t2',function(){skins('t')});on('t3',function(){skins('c')});on('bk',menu);
+  Array.prototype.forEach.call(ov.querySelectorAll('.sk button'),function(b){b.addEventListener('click',function(){var i=+b.getAttribute('data-i');
+    if(own[tab].indexOf(i)<0){var pr=L[i].p;if(wallet<pr){$('msg').textContent='Qızıl çatmır: '+pr+' lazımdır, səndə '+wallet+'.';return}
+      wallet-=pr;LS('sd_coins',wallet);own[tab].push(i);LS('sd_own',JSON.stringify(own));sfx('power')}
+    if(tab==='s')applySkin(i);else if(tab==='t')applyTrail(i);else applyCol(i);skins(tab)})})}
+var ACC=null;function loadAcc(){if(!ACC){try{ACC=JSON.parse(LS('sd_accs')||'{}')||{}}catch(e){ACC={}}}return ACC}
+function saveAcc(){LS('sd_accs',JSON.stringify(ACC))}
+function auth(mode){var reg=(mode||(Object.keys(loadAcc()).length?'lg':'rg'))==='rg';
+  view('<h1 style="font-size:36px">SONSUZ<br>DÜŞÜŞ</h1><div class="sk" style="gap:6px;margin-bottom:6px"><button class="tg '+(reg?'':'on')+'" id="m1" style="width:auto;padding:8px 16px">Giriş</button><button class="tg '+(reg?'on':'')+'" id="m2" style="width:auto;padding:8px 16px">Qeydiyyat</button></div><p style="margin:4px 0 8px">'+(reg?'Yeni hesab yarat: ad və şifrə seç.':'Oynamaq üçün hesabına daxil ol.')+'</p><input id="un" maxlength="14" placeholder="Ad" autocomplete="off"><input id="ps" type="password" maxlength="30" placeholder="Şifrə" style="margin-top:8px">'+(reg?'<input id="ps2" type="password" maxlength="30" placeholder="Şifrəni təkrarla" style="margin-top:8px">':'')+'<label style="margin-top:8px;font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="sp" style="width:auto;padding:0;box-shadow:none"> Şifrəni göstər</label><p id="msg" style="min-height:20px;color:var(--hot)"></p><button class="b p" id="ok">'+(reg?'Qeydiyyatdan keç':'Daxil ol')+'</button>');
+  var msg=function(t){$('msg').textContent=t},K=function(n){return n.toLowerCase()},fin=function(n){NAME=n;LS('sd_user',n);pushScore(best,0);menu()};
+  on('m1',function(){auth('lg')});on('m2',function(){auth('rg')});
+  $('sp').addEventListener('change',function(){var t=$('sp').checked?'text':'password';$('ps').type=t;if($('ps2'))$('ps2').type=t});
+  var go=async function(){try{var n=$('un').value.trim(),pw=$('ps').value,A=loadAcc();
+    if(reg){if(!/^[\p{L}\p{N}_-]{2,14}$/u.test(n)){msg('Ad 2-14 simvol olmalıdır (hərf, rəqəm, _ və -).');return}
+      if(pw.length<3){msg('Şifrə ən azı 3 simvol olmalıdır.');return}
+      if(pw!==$('ps2').value){msg('Şifrələr eyni deyil.');return}
+      if(A[K(n)]){msg('Bu ad artıq var. Başqa ad yaz və ya Giriş et.');return}
+      var salt=Math.random().toString(36).slice(2);A[K(n)]={name:n,salt:salt,hash:await hs(salt,pw)};saveAcc();fin(n)}
+    else{var a=A[K(n)];if(!a||await hs(a.salt,pw)!==a.hash){msg('Ad və ya şifrə səhvdir.');return}fin(a.name)}}catch(e){msg('Xəta baş verdi, yenidən yoxla.')}};
+  on('ok',go);['un','ps','ps2'].forEach(function(id){var e=$(id);if(e)e.addEventListener('keydown',function(ev){if(ev.key==='Enter')go()})})}
+var bTab='b',bData=[];
+function board(){if(!NAME){auth();return}
+  view('<h2>Skor tablosu</h2><div class="sk" style="gap:6px;margin-bottom:6px"><button class="tg '+(bTab==='b'?'on':'')+'" id="b1" style="width:auto;padding:7px 12px">Ən yaxşılar</button><button class="tg '+(bTab==='n'?'on':'')+'" id="b2" style="width:auto;padding:7px 12px">Yeni üzvlər</button></div><p id="bn" style="margin:0 0 4px;opacity:.7;font-size:13px"></p><div id="lb"><div><span>Yüklənir…</span></div></div><button class="b" id="bk">Geri</button>');
+  on('bk',menu);var L=$('lb');
+  var draw=function(){var a=bData.slice();if(bTab==='n')a.sort(function(x,y){return (y.joined||0)-(x.joined||0)});else a.sort(function(x,y){return (y.best|0)-(x.best|0)});
+    $('bn').textContent='Cəmi oyunçu: '+a.length;L.textContent='';
+    if(!a.length){var e=document.createElement('div');e.textContent='Hələ heç kim yoxdur. Birinci sən ol!';L.appendChild(e);return}
+    a.slice(0,100).forEach(function(o,i){var r=document.createElement('div'),l=document.createElement('span'),b=document.createElement('span');
+      l.textContent=(i+1)+'. '+String(o.name||'?').slice(0,14)+' '+String(o.m||'').slice(0,16);
+      b.textContent=bTab==='n'?(o.joined?new Date(o.joined).toLocaleDateString()+' · ':'')+(o.best|0)+' xal':(o.best|0)+' xal · '+(o.gold|0)+' qızıl';
+      if(o.name===NAME)r.style.color='var(--gold)';r.appendChild(l);r.appendChild(b);L.appendChild(r)})};
+  on('b1',function(){bTab='b';board()});on('b2',function(){bTab='n';board()});
+  if(FB_URL){var load=async function(){try{var r=await (await fetch(fbBase()+'/scores.json')).json();bData=r?Object.keys(r).map(function(k){return r[k]||{}}):[];draw()}catch(e){L.textContent='Cədvəl açılmadı.'}};load();var t=setInterval(load,10000);unsub=function(){clearInterval(t)};return}
+  if(!DB){L.innerHTML='<div><span>Ortaq skor tablosu hələ qoşulmayıb. Oyun faylındakı FB_URL sətrinə bazanın ünvanını yaz.</span></div>';return}
+  try{unsub=DB.collection('scores').orderBy('best','desc').limit(200).onSnapshot(function(sn){bData=sn.docs.map(function(d){return d.data()||{}});draw()},function(){L.textContent='Cədvəl açılmadı.'})}catch(e){L.textContent='Cədvəl açılmadı.'}}
+function start(a){a=typeof a==='number'?a:0;if(!NAME){auth();return}ac();reset();if(a){S.adv=a;S.goal=60+(a-1)*8;S.g1=a>=16;S.zs=AZ[Math.floor((a-1)/5)];S.hp=Math.min(.55,.14+a*.007)}fill();playing=true;ov.style.display='none';$('hud').style.display='block';sfx('start');music('g',S.adv?Math.floor((S.adv-1)/5):0)}
+function over(){var a=S.adv,sc=Math.floor(S.depth)+S.gold*10,nb=!a&&sc>best;if(nb){best=sc;LS('sd_best',best)}if(!a)pushScore(sc,S.gold);
+  view('<h2 style="font-size:34px">ÇARPDIN</h2>'+(a?'<p>Bölmə '+a+': '+Math.floor(S.depth)+'/'+S.goal+' m</p>':'<p style="font-size:20px">'+sc+' xal</p>')+'<p>'+Math.floor(S.depth)+' m · '+S.gold+' qızıl (cəmi '+wallet+')</p>'+(a?'':'<p>'+(nb?'Yeni rekord!':'Rekord: '+best)+'</p>')+(S.nm?'<p>🏅 Yeni medal: '+S.nm+'</p>':'')+'<button class="b p" id="pl">Yenidən</button>'+(a?'<button class="b" id="mp">Xəritə</button>':'')+'<button class="b" id="mn">Ana ekran</button>');
+  on('pl',function(){start(a)});on('mp',advMap);on('mn',function(){reset();fill();menu()})}
+function win(){playing=false;boom(S.x,S.y,0xffffff,36);boom(S.x,S.y,0x111111,36);flash('#ffffff');[0xff5a5a,0xffd21f,0x5aff8a,0x5ac8ff,0xc85aff,0xffffff].forEach(function(c){boom(S.x+(Math.random()-.5)*4,S.y,c,12)});var n=S.adv,bonus=10+n*5;S.alive=false;wallet+=S.gold+bonus;LS('sd_coins',wallet);S.nm=endRun(n);sfx('power');music('');if(opt.sfx>.01){vm=opt.sfx;[523,659,784,1046,784,1046,1318].forEach(function(f,ii){tone(f,.28,'square',.07,ii*.11)})}
+  setTimeout(function(){view('<h2>Bölmə '+n+' tamamlandı!</h2><p>'+S.gold+' qızıl + '+bonus+' bonus (cəmi '+wallet+')</p>'+(S.nm?'<p>🏅 Yeni medal: '+S.nm+'</p>':'')+(n<75?'<button class="b p" id="nx">Növbəti bölmə</button>':'<p>Bütün macəranı bitirdin!</p>')+'<button class="b" id="mp">Xəritə</button>');
+    on('nx',function(){story(n+1)});on('mp',advMap)},600)}
+function advMap(){var h='<h2>Macəra</h2><div style="max-height:62vh;overflow:auto;max-width:330px">';
+  AZ.forEach(function(z,zi){h+='<p style="margin:10px 0 4px;color:var(--gold);font-weight:800">'+z.n+'</p><div class="sk" style="gap:8px">';
+    for(var j=1;j<=5;j++){var n=zi*5+j,lk=n>advDone+1,dn=n<=advDone;h+='<button data-n="'+n+'" '+(lk?'disabled':'')+' class="'+(dn?'on':'')+'" style="width:56px;height:52px;font-size:17px;opacity:'+(lk?.35:1)+'">'+n+(dn?'✓':'')+'</button>'}h+='</div>'});
+  view(h+'</div><button class="b" id="bk">Geri</button>');on('bk',menu);
+  Array.prototype.forEach.call(ov.querySelectorAll('[data-n]'),function(b){b.addEventListener('click',function(){story(+b.getAttribute('data-n'))})})}
+function story(n){var z=AZ[Math.floor((n-1)/5)],st=Math.ceil(n/5);
+  view('<h2>Bölmə '+n+' · '+z.n+'</h2><p>'+STR[n-1]+'</p><p>Hədəf: '+(60+(n-1)*8)+' m<br>Çətinlik: '+'★'.repeat(st)+'☆'.repeat(5-st)+'</p><button class="b p" id="go">Başla</button><button class="b" id="bk">Xəritə</button>');
+  on('go',function(){start(n)});on('bk',advMap)}
+function acct(){var got=medalsNow(),hx=function(c){return ('000000'+c.toString(16)).slice(-6)},
+  tt=[[75,'Çempion'],[70,'Bulud gəzəni'],[60,'Rif ustası'],[50,'Yarım əsr'],[40,'Od ustası'],[30,'Meşə gözətçisi'],[20,'Çöl yolçusu'],[10,'Buz ovçusu'],[5,'Qar gəzəni'],[0,'Yeni başlayan']],
+  title=(tt.filter(function(x){return advDone>=x[0]})[0]||tt[9])[1],sk=SK[skin],
+  av=sk.blk?'background:url('+(sk.fc||(sk.fc=blockFaces(sk.blk,sk.spec))).icon+');background-size:cover;image-rendering:pixelated':'background:#'+hx(sk.c);
+  var h='<h2 style="margin-bottom:8px">Hesab</h2><div class="card"><div style="display:flex;align-items:center;gap:12px"><i style="'+av+';width:56px;height:56px;border-radius:8px;display:block;border:2px solid #fff3"></i><div style="text-align:left"><b id="me" style="font-size:20px"></b><br><span style="color:var(--gold);font-size:13px">'+title+'</span></div></div><div class="grid"><div><b>'+best+'</b>Rekord</div><div><b>'+ST.totalGold+'</b>Cəmi qızıl</div><div><b>'+wallet+'</b>Balans</div><div><b>'+ST.maxDepth+' m</b>Ən dərin</div><div><b>'+ST.games+'</b>Oyun</div><div><b>'+ST.smashes+'</b>Qırılan blok</div></div><p style="margin:10px 0 2px;font-size:12px;text-align:left">Macəra: '+advDone+'/75</p><div class="bar"><i style="width:'+(advDone/75*100)+'%;background:var(--gold)"></i></div></div>';
+  h+='<p style="margin:12px 0 4px">Seçilmiş medallar</p><div class="sk" style="gap:8px;margin:0 0 6px">';
+  for(var q=0;q<4;q++){var m=MD[SLOTS[q]];h+='<button style="width:58px;height:58px;font-size:26px;padding:0" disabled>'+(m?m.i:'+')+'</button>'}
+  h+='</div><p style="margin:6px 0 4px;font-size:13px;opacity:.8">Medallar (toxun: tax / çıxar) · '+got.length+'/'+MD.length+'</p><div class="sk" style="max-height:26vh;overflow:auto">';
+  MD.forEach(function(m,i){h+='<button data-i="'+i+'" class="'+(SLOTS.indexOf(i)>=0?'on':'')+'" style="opacity:'+(got.indexOf(i)>=0?1:.35)+'"><i style="display:block;font-style:normal;font-size:24px;height:auto;width:auto;background:none;margin:0">'+m.i+'</i>'+m.n+'<br><small>'+m.d+'</small></button>'});
+  h+='</div><p id="msg" style="min-height:18px;margin:6px 0"></p><div id="pf" style="display:none"><input id="po" type="password" placeholder="Köhnə şifrə"><input id="pn" type="password" placeholder="Yeni şifrə" style="margin-top:8px"><button class="b p" id="ps">Yadda saxla</button></div><button class="b" id="cp">Şifrəni dəyiş</button><button class="b" id="lo">Çıxış</button><button class="b" id="bk">Geri</button>';
+  view(h);$('me').textContent=NAME;
+  on('bk',function(){pushScore(best,0);menu()});on('lo',function(){NAME='';LS('sd_user','');auth()});
+  on('cp',function(){var f=$('pf');f.style.display=f.style.display==='none'?'block':'none'});
+  on('ps',async function(){try{var a=loadAcc()[NAME.toLowerCase()],o=$('po').value,n=$('pn').value;
+    if(!a||await hs(a.salt,o)!==a.hash){$('msg').textContent='Köhnə şifrə səhvdir.';return}
+    if(n.length<3){$('msg').textContent='Yeni şifrə ən azı 3 simvol olmalıdır.';return}
+    a.salt=Math.random().toString(36).slice(2);a.hash=await hs(a.salt,n);saveAcc();$('pf').style.display='none';$('msg').textContent='Şifrə dəyişdirildi.'}catch(e){$('msg').textContent='Xəta baş verdi.'}});
+  Array.prototype.forEach.call(ov.querySelectorAll('[data-i]'),function(b){b.addEventListener('click',function(){var i=+b.getAttribute('data-i');
+    if(got.indexOf(i)<0){$('msg').textContent='Tələb: '+MD[i].d;return}
+    var p=SLOTS.indexOf(i);if(p>=0)SLOTS[p]=-1;else{var e=SLOTS.indexOf(-1);if(e<0){$('msg').textContent='4 yer dolu, əvvəl birini çıxar.';return}SLOTS[e]=i}
+    LS('sd_slots',JSON.stringify(SLOTS));acct()})})}
+applyTrail(trail);
+(NAME?menu:auth)();
+function first(){removeEventListener('pointerdown',first);ac();if(!playing&&ov.style.display!=='none'&&$('pl')&&!mus)music('m')}
+addEventListener('pointerdown',first);
+
+/* ---------- INPUT ---------- */
+addEventListener('keydown',function(e){keys[e.key]=1});addEventListener('keyup',function(e){keys[e.key]=0});
+addEventListener('pointerdown',function(e){drag=e.clientX});
+addEventListener('pointermove',function(e){if(drag!==null&&playing){S.tx+=(e.clientX-drag)*(7/Math.min(innerWidth,500))*1.15;drag=e.clientX}});
+addEventListener('pointerup',function(){drag=null});
+
+function die(){flash('#f33');wallet+=S.gold;LS('sd_coins',wallet);S.nm=endRun(0);S.alive=false;playing=false;S.shake=1;boom(S.x,S.y,SK[skin].c,30);player.visible=false;sfx('die');music('');setTimeout(over,800)}
+function flash(c){var e=$('fl');e.style.background=c;e.style.opacity=.4;setTimeout(function(){e.style.opacity=0},70)}
+function flash(c){var f=$('fl');f.style.transition='none';f.style.background=c;f.style.opacity=.5;void f.offsetWidth;f.style.transition='opacity .5s';f.style.opacity=0}
+function popG(){var g=$('g');g.classList.remove('pop');void g.offsetWidth;g.classList.add('pop')}
+function toast(t){var z=$('zt');z.textContent=t;z.style.opacity=1;setTimeout(function(){z.style.opacity=0},2200)}
+
+function step(dt){
+  if(playing){
+    S.t+=dt;S.v=S.adv?Math.min(5.6+S.adv*.2+S.t*.03,17.5):Math.min(6+S.t*.07,13);
+    if(keys.ArrowLeft||keys.a)S.tx-=9*dt;if(keys.ArrowRight||keys.d)S.tx+=9*dt;
+    S.tx=Math.max(-3,Math.min(3,S.tx));S.x+=(S.tx-S.x)*Math.min(1,dt*14);
+    S.y-=S.v*dt;S.depth=-S.y;
+    for(var i=0;i<layers.length;i++){var L=layers[i];if(Math.abs(L.y-S.y)>1.2)continue;
+      L.items=L.items.filter(function(q){return !q.dead});for(var j=L.items.length-1;j>=0;j--){var it=L.items[j];if(it.dead)continue;
+        if(Math.abs(it.x-S.x)<(it.t===3?.6:.78)){
+          if(it.t===3){S.gold++;popG();S.pw=Math.min(100,S.pw+20);boom(it.x,L.y,0xffd21f,8);sfx('coin');if(S.pw>=100&&!S.full){S.full=true;sfx('power');flash('#ffc83d')}}
+          else if(it.t===1){S.pw=Math.max(0,S.pw-6);S.full=S.pw>=100;boom(it.x,L.y,0xb5733a,16);S.shake=.3;sfx('crate')}
+          else if(it.t===7){S.shield=1;boom(it.x,L.y,0xff6aa8,10);sfx('power')}
+          else if(it.t===8){S.gold+=5;S.pw=Math.min(100,S.pw+40);S.full=S.pw>=100;boom(it.x,L.y,0x3deddb,12);sfx('coin')}
+          else if(it.t===5){flash('#ff8a3a');S.pw=Math.max(0,S.pw-15);S.full=S.pw>=100;S.shake=1;sfx('smash');boom(it.x,L.y,0xff3a2a,24);L.items.forEach(function(q){if(q!==it&&q.t!==3&&q.t!==7&&q.t!==8&&Math.abs(q.x-it.x)<1.6){q.dead=true;scene.remove(q.o);boom(q.x,L.y,0x999999,8)}})}
+          else if(it.t===4||it.t===9||!S.full){if(S.shield){S.shield=0;S.shake=.6;sfx('smash');boom(it.x,L.y,0xff6aa8,18)}else{die();break}}
+          else{flash('#fff');ST.smashes++;S.pw=0;S.full=false;boom(it.x,L.y,0x8a90b0,26);S.shake=.8;sfx('smash')}
+          scene.remove(it.o);L.items.splice(j,1)}}}
+    while(layers.length&&layers[0].y>S.y+14)clearL(layers.shift());
+    if(S.adv&&playing&&S.depth>=S.goal){win();return}
+    fill();
+    var zi=Math.floor(Math.max(0,S.depth-6)/GAP/ZL);
+    if(!S.adv&&zi!==zoneNow){if(zoneNow>=0){toast(ZN[zi%ZN.length].n);sfx('zone');flash('#ffffff');if(mkind==='g')music('g',zi)}zoneNow=zi}
+    var sc=Math.floor(S.depth)+S.gold*10;
+    $('sc').textContent=sc;$('g').textContent=S.gold;
+    $('sl').textContent=S.adv?'BÖLMƏ '+S.adv+' · '+Math.floor(S.depth)+'/'+S.goal+' m':'XAL';$('sb').firstChild.style.width=(S.adv?Math.min(100,S.depth/S.goal*100):best?Math.min(100,sc/best*100):100)+'%';
+    $('pw').firstChild.style.width=S.pw+'%';$('pw').className='bar'+(S.full?' full':'');
+    var he=S.full?0x9a4000:0x2a1020;ZN.concat(AZ).forEach(function(z){z.mh.emissive.setHex(he)});
+  }
+  var tz=S.zs||ZN[(zoneNow<0?0:zoneNow)%ZN.length];if(!tz.col)tz.col=new THREE.Color(tz.f);
+  scene.background.lerp(tz.col,dt*1.5);scene.fog.color.copy(scene.background);
+  for(var a=0;a<layers.length;a++)for(var b=0;b<layers[a].items.length;b++){var q=layers[a].items[b];if(q.t===3||q.t===8){q.o.rotation.y+=dt*3;q.o.position.y=layers[a].y+Math.sin(performance.now()/300+q.ph)*.1}if(q.mv){q.x=q.bx+Math.sin(performance.now()/500+q.ph)*1.2;q.o.position.x=q.x}}
+  for(var k=parts.length-1;k>=0;k--){var p=parts[k];p.l-=dt*(p.r||1.4);p.vy-=(p.g===undefined?14:p.g)*dt;
+    p.o.position.x+=p.vx*dt;p.o.position.y+=p.vy*dt;p.o.position.z+=p.vz*dt;if(p.sp){p.sp.a+=dt*7;p.o.position.x=p.sp.cx+Math.cos(p.sp.a)*.55;p.o.position.z=p.sp.cz+Math.sin(p.sp.a)*.55}if(p.wv)p.o.position.x=p.wv.cx+Math.sin(p.l*9+p.wv.ph)*.55;if(!p.nr){p.o.rotation.x+=dt*6;p.o.rotation.y+=dt*5}
+    p.o.scale.setScalar(Math.max(0,p.l)*p.s);
+    if(p.l<=0){scene.remove(p.o);p.o.material.dispose();parts.splice(k,1)}}
+  S.shake=Math.max(0,S.shake-dt*2.5)}
+
+function loop(t){requestAnimationFrame(loop);
+  var dt=Math.min((t-last)/1000||0,.05);last=t;
+  if(!playing&&S.alive){S.y-=2*dt;S.depth=-S.y;fill();var zi=Math.floor(Math.max(0,S.depth-6)/GAP/ZL);zoneNow=zi}
+  step(dt);trailFx(dt);
+  player.position.set(S.x,S.y,1.3);aura.visible=!!(S.shield&&playing);aura.position.copy(player.position);mLava.emissiveIntensity=.8+.3*Math.sin(t/200);player.rotation.z=(S.tx-S.x)*-.25;player.rotation.y=Math.sin(t/400)*.3;
+  torch.position.set(S.x,S.y+2.5,3);
+  var sh=S.shake*.35;
+  cam.position.set(S.x*.4+(Math.random()-.5)*sh,S.y+5.5+(Math.random()-.5)*sh,8.5);
+  streaks.forEach(function(k){if(k.position.y>S.y+9)k.position.y=S.y-20-Math.random()*25;k.scale.y=.6+S.v*.12});
+  var bf=cam.aspect<1?75:60,nf=bf+(playing?(S.v-6)*.6:0);if(Math.abs(cam.fov-nf)>.05){cam.fov+=(nf-cam.fov)*.1;cam.updateProjectionMatrix()}
+  if(player.visible)player.scale.set(.8-S.v*.004,.8+S.v*.012,.8-S.v*.004);
+  cam.lookAt(S.x*.4,S.y-3.5,0);cam.rotateZ((S.tx-S.x)*.025);var bf=cam.aspect<1?75:60;cam.fov+=((bf+(playing?S.v*.5:0))-cam.fov)*Math.min(1,dt*3);cam.updateProjectionMatrix();motes.forEach(function(m){if(m.position.y>S.y+9||m.position.y<S.y-40)m.position.set((Math.random()-.5)*8,S.y-Math.random()*35,(Math.random()-.5)*5);m.rotation.y+=dt});ren.render(scene,cam)}
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
